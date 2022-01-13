@@ -12,9 +12,10 @@ function getUser(req, res) {
 
   return User
     .findById(userId)
+    .orFail(() => new Error('NotFound'))
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotFound') {
         res.status(404).send({ message: 'Ресурс не найден' });
       } else {
         res.status(500).send({ message: 'Ошибка сервера' });
@@ -29,7 +30,7 @@ function createUser(req, res) {
     .create({ name, about, avatar })
     .then((user) => res.status(201).send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
       } else {
         res.status(500).send({ message: 'Ошибка сервера' });
@@ -46,11 +47,12 @@ function updateProfile(req, res) {
       owner,
       { name, about },
       { new: true, runValidators: true },
-    ).then((user) => res.status(200).send(user))
+    ).orFail(() => new Error('NotFound'))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
+      } else if (err.message === 'NotFound') {
         res.status(404).send({ message: 'Ресурс не найден' });
       } else {
         res.status(500).send({ message: 'Ошибка сервера' });
@@ -67,11 +69,12 @@ function updateAvatar(req, res) {
       owner,
       { avatar },
       { new: true, runValidators: true },
-    ).then((user) => res.status(200).send(user))
+    ).orFail(() => new Error('NotFound'))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
+      } else if (err.message === 'NotFound') {
         res.status(404).send({ message: 'Ресурс не найден' });
       } else {
         res.status(500).send({ message: 'Ошибка сервера' });
