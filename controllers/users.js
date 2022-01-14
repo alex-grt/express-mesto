@@ -1,10 +1,11 @@
 const User = require('../models/user');
+const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require('../utils/errors');
 
 function getUsers(req, res) {
   return User
     .find({})
     .then((users) => res.status(200).send(users))
-    .catch(() => res.status(500).send({ message: 'Ошибка сервера' }));
+    .catch(() => res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' }));
 }
 
 function getUser(req, res) {
@@ -16,11 +17,11 @@ function getUser(req, res) {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       } else if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Ресурс не найден' });
+        res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
       } else {
-        res.status(500).send({ message: 'Ошибка сервера' });
+        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
       }
     });
 }
@@ -33,9 +34,9 @@ function createUser(req, res) {
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Ошибка сервера' });
+        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
       }
     });
 }
@@ -53,11 +54,11 @@ function updateProfile(req, res) {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       } else if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Ресурс не найден' });
+        res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
       } else {
-        res.status(500).send({ message: 'Ошибка сервера' });
+        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
       }
     });
 }
@@ -75,11 +76,11 @@ function updateAvatar(req, res) {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       } else if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Ресурс не найден' });
+        res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
       } else {
-        res.status(500).send({ message: 'Ошибка сервера' });
+        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
       }
     });
 }

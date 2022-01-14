@@ -1,10 +1,11 @@
 const Card = require('../models/card');
+const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require('../utils/errors');
 
 function getCards(req, res) {
   return Card
     .find({})
     .then((cards) => res.status(200).send(cards))
-    .catch(() => res.status(500).send({ message: 'Ошибка сервера' }));
+    .catch(() => res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' }));
 }
 
 function createCard(req, res) {
@@ -16,9 +17,9 @@ function createCard(req, res) {
     .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Ошибка сервера' });
+        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
       }
     });
 }
@@ -32,11 +33,11 @@ function deleteCard(req, res) {
     .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       } else if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Ресурс не найден' });
+        res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
       } else {
-        res.status(500).send({ message: 'Ошибка сервера' });
+        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
       }
     });
 }
@@ -54,11 +55,11 @@ function setLike(req, res) {
     .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       } else if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Ресурс не найден' });
+        res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
       } else {
-        res.status(500).send({ message: 'Ошибка сервера' });
+        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
       }
     });
 }
@@ -76,11 +77,11 @@ function removeLike(req, res) {
     .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       } else if (err.message === 'NotFound') {
-        res.status(404).send({ message: 'Ресурс не найден' });
+        res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
       } else {
-        res.status(500).send({ message: 'Ошибка сервера' });
+        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
       }
     });
 }
