@@ -15,7 +15,9 @@ function getUser(req, res) {
     .orFail(() => new Error('NotFound'))
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.message === 'NotFound') {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else if (err.message === 'NotFound') {
         res.status(404).send({ message: 'Ресурс не найден' });
       } else {
         res.status(500).send({ message: 'Ошибка сервера' });

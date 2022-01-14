@@ -31,7 +31,9 @@ function deleteCard(req, res) {
     .orFail(() => new Error('NotFound'))
     .then((card) => res.status(200).send(card))
     .catch((err) => {
-      if (err.message === 'NotFound') {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else if (err.message === 'NotFound') {
         res.status(404).send({ message: 'Ресурс не найден' });
       } else {
         res.status(500).send({ message: 'Ошибка сервера' });
