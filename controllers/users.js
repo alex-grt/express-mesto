@@ -1,47 +1,85 @@
+const bcrypt = require('bcryptjs/dist/bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require('../utils/errors');
 
-function getUsers(req, res) {
+function getUsers(req, res, next) {
   return User
     .find({})
     .then((users) => res.status(200).send(users))
-    .catch(() => res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' }));
+    .catch(next);
 }
 
-function getUser(req, res) {
+function getUser(req, res, next) {
   const { userId } = req.params;
 
   return User
     .findById(userId)
     .orFail(() => new Error('NotFound'))
     .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
-      } else if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
-      } else {
-        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
-      }
-    });
+    .catch(next);
 }
 
-function createUser(req, res) {
-  const { name, about, avatar } = req.body;
+function getOwner(req, res, next) {
+  const owner = req.user._id;
 
   return User
-    .create({ name, about, avatar })
-    .then((user) => res.status(201).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
-      }
-    });
+    .findById(owner)
+    .orFail(() => new Error('NotFound'))
+    .then((user) => res.status(200).send(user))
+    .catch(next);
 }
 
-function updateProfile(req, res) {
+function createUser(req, res, next) {
+  const {
+    email,
+    password,
+    name,
+    about,
+    avatar,
+  } = req.body;
+
+  return bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      email,
+      password: hash,
+      name,
+      about,
+      avatar,
+    }))
+    .then((user) => res.status(201).send(user))
+    .catch(next);
+}
+
+function login(req, res, next) {
+  const { email, password } = req.body;
+
+  return User
+    .findOne({ email })
+    .select('+password')
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error('Unauthorized'));
+      }
+
+      return bcrypt
+        .compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            return Promise.reject(new Error('Unauthorized'));
+          }
+
+          return user;
+        });
+    })
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'trulyalya', { expiresIn: '7d' });
+
+      res.status(202).send({ token });
+    })
+    .catch(next);
+}
+
+function updateProfile(req, res, next) {
   const { name, about } = req.body;
   const owner = req.user._id;
 
@@ -52,18 +90,10 @@ function updateProfile(req, res) {
       { new: true, runValidators: true },
     ).orFail(() => new Error('NotFound'))
     .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
-      } else if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
-      } else {
-        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
-      }
-    });
+    .catch(next);
 }
 
-function updateAvatar(req, res) {
+function updateAvatar(req, res, next) {
   const { avatar } = req.body;
   const owner = req.user._id;
 
@@ -74,21 +104,15 @@ function updateAvatar(req, res) {
       { new: true, runValidators: true },
     ).orFail(() => new Error('NotFound'))
     .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
-      } else if (err.message === 'NotFound') {
-        res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
-      } else {
-        res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
-      }
-    });
+    .catch(next);
 }
 
 module.exports = {
   getUsers,
   getUser,
+  getOwner,
   createUser,
+  login,
   updateProfile,
   updateAvatar,
 };
