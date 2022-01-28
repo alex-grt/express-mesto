@@ -22,9 +22,16 @@ function deleteCard(req, res, next) {
 
   return Card
     .findById(cardId)
-    .findOneAndRemove({ owner: req.user._id })
-    .orFail(() => new Error('Forbidden'))
-    .then((card) => res.status(200).send(card))
+    .orFail(() => new Error('NotFound'))
+    .then((card) => {
+      if (card.owner.toString() === req.user._id) {
+        card.remove();
+        res.status(200).send(card);
+        return;
+      }
+
+      next(new Error('Forbidden'));
+    })
     .catch(next);
 }
 
