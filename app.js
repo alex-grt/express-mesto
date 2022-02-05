@@ -7,6 +7,7 @@ const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/error-handler');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { createUser, login } = require('./controllers/users');
 const { NOT_FOUND } = require('./utils/errors');
 
@@ -14,6 +15,7 @@ const { PORT = 3000, DB_ADDRESS = 'mongodb://localhost:27017/mestodb' } = proces
 const app = express();
 
 app.use(bodyParser.json());
+app.use(requestLogger);
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
@@ -29,6 +31,7 @@ app.post('/signup', celebrate({
 app.use(auth);
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+app.use(errorLogger);
 app.use((req, res) => {
   res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
 });
