@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -9,7 +10,7 @@ const errorHandler = require('./middlewares/error-handler');
 const { createUser, login } = require('./controllers/users');
 const { NOT_FOUND } = require('./utils/errors');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, DB_ADDRESS = 'mongodb://localhost:27017/mestodb' } = process.env;
 const app = express();
 
 app.use(bodyParser.json());
@@ -34,7 +35,7 @@ app.use((req, res) => {
 app.use(errors());
 app.use(errorHandler);
 
-mongoose.connect('mongodb://localhost:27017/mestodb', {
+mongoose.connect(DB_ADDRESS, {
   useNewUrlParser: true,
 });
 
