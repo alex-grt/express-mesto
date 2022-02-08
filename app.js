@@ -9,7 +9,6 @@ const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/error-handler');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { createUser, login } = require('./controllers/users');
-const { NOT_FOUND } = require('./utils/errors');
 
 const { PORT = 3000, DB_ADDRESS = 'mongodb://localhost:27017/mestodb' } = process.env;
 const app = express();
@@ -31,10 +30,10 @@ app.post('/signup', celebrate({
 app.use(auth);
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
-app.use(errorLogger);
-app.use((req, res) => {
-  res.status(NOT_FOUND).send({ message: 'Ресурс не найден' });
+app.use(() => {
+  throw new Error('NotFound');
 });
+app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { UNAUTHORIZED, FORBIDDEN } = require('../utils/errors');
+const { UNAUTHORIZED } = require('../utils/errors');
 
 const { JWT_SECRET = 'oops' } = process.env;
 
@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return res.status(FORBIDDEN).send({ message: 'Доступ запрещён' });
+    throw new Error('Forbidden');
   }
 
   const token = authorization.replace('Bearer ', '');
